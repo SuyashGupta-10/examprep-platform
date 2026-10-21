@@ -20,7 +20,6 @@ import BookmarksPage from './pages/BookmarksPage'
 import NotesPage from './pages/NotesPage'
 import ProfilePage from './pages/ProfilePage'
 import DiscussionPage from './pages/DiscussionPage'
-import VisitorAnalyticsPage from './pages/VisitorAnalyticsPage'
 
 // Components
 import ScientificCalculator from './components/ScientificCalculator'
@@ -30,20 +29,19 @@ import AuthPromptModal from './components/AuthPromptModal'
 
 function App() {
   const { theme, fetchQuestions, syncUserData } = useAppStore()
-  const { checkAuth, pingVisitor } = useAuthStore()
+  const { checkAuth } = useAuthStore()
 
   // Verify auth session on mount & fetch cloud data
   useEffect(() => {
     const initializeApp = async () => {
       fetchQuestions()
       const user = await checkAuth()
-      if (user && user.name) {
+      if (user) {
         await syncUserData()
-        pingVisitor(user.name)
       }
     }
     initializeApp()
-  }, [fetchQuestions, checkAuth, syncUserData, pingVisitor])
+  }, [fetchQuestions, checkAuth, syncUserData])
 
   // Apply dark mode theme class to html node on mount and changes
   useEffect(() => {
@@ -57,9 +55,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public Routes (Temporarily showing Login page as direct starting point) */}
-        <Route path="/" element={<LoginPage />} />
-        <Route path="/landing" element={<LandingPage />} />
+        {/* Public Routes */}
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -75,7 +72,6 @@ function App() {
           <Route path="/discussion" element={<DiscussionPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<ProfilePage />} />
-          <Route path="/admin-visitors" element={<VisitorAnalyticsPage />} />
         </Route>
 
         {/* Fallback Redirect */}
