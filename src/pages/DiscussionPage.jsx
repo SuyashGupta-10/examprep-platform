@@ -12,6 +12,7 @@ import ScratchpadDrawer from '../components/ScratchpadDrawer'
 import RichTextEditor from '../components/RichTextEditor'
 import FormattedContent from '../components/FormattedContent'
 import FilterDropdown from '../components/FilterDropdown'
+import { compareSubjects } from '../utils/subjects'
 
 // Recursive component for rendering multi-level threaded replies
 function ThreadedReplyNode({
@@ -210,7 +211,7 @@ export default function DiscussionPage() {
   // Available filter options extracted from questions
   const availableSubjects = useMemo(() => {
     const subjects = new Set((questions || []).map(q => q.subject).filter(Boolean))
-    return Array.from(subjects).sort()
+    return Array.from(subjects).sort(compareSubjects)
   }, [questions])
 
   const parseSet = (s) => {
@@ -308,7 +309,8 @@ export default function DiscussionPage() {
   // Subject Configurations for Styling
   const getSubjectConfig = (subject) => {
     switch (subject) {
-      case 'Algorithms & Data Structures':
+      case 'Algorithms':
+      case 'Programming & Data Structures':
         return {
           icon: Layers,
           colorClass: 'text-indigo-500 bg-indigo-500/10 dark:bg-indigo-500/20 border-indigo-500/20',
@@ -322,7 +324,7 @@ export default function DiscussionPage() {
           gradientClass: 'from-teal-500/5 to-emerald-500/5 hover:border-teal-500 dark:hover:border-teal-500',
           badgeColor: 'bg-teal-500/10 text-teal-650 dark:text-teal-400',
         }
-      case 'Databases (DBMS)':
+      case 'Databases':
         return {
           icon: Target,
           colorClass: 'text-blue-500 bg-blue-500/10 dark:bg-blue-500/20 border-blue-500/20',

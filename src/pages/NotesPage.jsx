@@ -11,6 +11,7 @@ import QuestionText from '../components/QuestionText'
 import ScratchpadDrawer from '../components/ScratchpadDrawer'
 import FilterDropdown from '../components/FilterDropdown'
 import { exportQuestionNotePdf, exportBulkNotesPdf, renderSheetToDataUrl } from '../utils/notesPdfExport'
+import { compareSubjects } from '../utils/subjects'
 
 export default function NotesPage() {
   const { 
@@ -57,7 +58,7 @@ export default function NotesPage() {
   // Extract unique subjects, years & topics from questions with notes
   const availableSubjects = useMemo(() => {
     const subjects = new Set(questionsWithNotes.map(q => q.subject).filter(Boolean))
-    return Array.from(subjects).sort()
+    return Array.from(subjects).sort(compareSubjects)
   }, [questionsWithNotes])
 
   const availableYears = useMemo(() => {

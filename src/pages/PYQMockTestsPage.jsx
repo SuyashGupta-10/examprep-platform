@@ -10,6 +10,7 @@ import { useAppStore, syncTestRecordsToServer } from '../store/useAppStore'
 import confetti from 'canvas-confetti'
 import QuestionImage from '../components/QuestionImage'
 import QuestionText from '../components/QuestionText'
+import { compareSubjects } from '../utils/subjects'
 
 export default function PYQMockTestsPage() {
   const { questions, calculatorOpen, setCalculatorOpen, setIsPracticeActive } = useAppStore()
@@ -77,7 +78,8 @@ export default function PYQMockTestsPage() {
   // Subject Configurations for Styling
   const getSubjectConfig = (subject) => {
     switch (subject) {
-      case 'Algorithms & Data Structures':
+      case 'Algorithms':
+      case 'Programming & Data Structures':
         return {
           icon: Layers,
           colorClass: 'text-indigo-500 bg-indigo-500/10 dark:bg-indigo-500/20 border-indigo-500/20',
@@ -93,7 +95,7 @@ export default function PYQMockTestsPage() {
           badgeColor: 'bg-teal-500/10 text-teal-650 dark:text-teal-400',
           label: 'Paging, CPU scheduling, threads, sync'
         }
-      case 'Databases (DBMS)':
+      case 'Databases':
         return {
           icon: Target,
           colorClass: 'text-blue-500 bg-blue-500/10 dark:bg-blue-500/20 border-blue-500/20',
@@ -986,7 +988,7 @@ export default function PYQMockTestsPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {Object.keys(subjectsMap).map(sub => {
+              {Object.keys(subjectsMap).sort(compareSubjects).map(sub => {
                 const config = getSubjectConfig(sub)
                 const SubjectIcon = config.icon
                 const isSelected = selectedSubjects.includes(sub)
@@ -1098,7 +1100,7 @@ export default function PYQMockTestsPage() {
                   className="w-full h-10 pl-9 pr-8 text-xs font-semibold bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-btn focus:outline-none focus:border-primary text-slate-800 dark:text-slate-100 appearance-none cursor-pointer shadow-sm"
                 >
                   <option value="All">All Subjects ({Object.keys(subjectsMap).length})</option>
-                  {Object.keys(subjectsMap).map(sub => (
+                  {Object.keys(subjectsMap).sort(compareSubjects).map(sub => (
                     <option key={sub} value={sub}>{sub}</option>
                   ))}
                 </select>
@@ -1258,7 +1260,7 @@ export default function PYQMockTestsPage() {
                 </div>
                 
                 <div className="space-y-3 pt-2">
-                  {Object.keys(topicsMap).map(sub => {
+                  {Object.keys(topicsMap).sort(compareSubjects).map(sub => {
                     const isExpanded = expandedWizardSubject === sub
                     const config = getSubjectConfig(sub)
                     const SubjectIcon = config.icon

@@ -12,6 +12,7 @@ import DiscussionDrawer from '../components/DiscussionDrawer'
 import ScratchpadDrawer from '../components/ScratchpadDrawer'
 import QuestionImage from '../components/QuestionImage'
 import QuestionText from '../components/QuestionText'
+import { compareSubjects } from '../utils/subjects'
 
 export default function PYQPage() {
   const {
@@ -34,10 +35,8 @@ export default function PYQPage() {
 
   const getSubjectConfig = (subject) => {
     switch (subject) {
-      case 'Algorithms & Data Structures':
       case 'Algorithms':
-      case 'Data Structures':
-      case 'Programming in C':
+      case 'Programming & Data Structures':
         return {
           icon: Layers,
           colorClass: 'text-indigo-500 bg-indigo-500/10 dark:bg-indigo-500/20 border-indigo-500/20',
@@ -53,9 +52,7 @@ export default function PYQPage() {
           badgeColor: 'bg-teal-500/10 text-teal-650 dark:text-teal-400',
           label: 'Paging, CPU scheduling, threads, sync'
         }
-      case 'Database Management Systems':
-      case 'Databases (DBMS)':
-      case 'Database Management':
+      case 'Databases':
         return {
           icon: Database,
           colorClass: 'text-blue-500 bg-blue-500/10 dark:bg-blue-500/20 border-blue-500/20',
@@ -88,7 +85,6 @@ export default function PYQPage() {
           label: 'Parsers, syntax trees, optimization'
         }
       case 'Computer Organization & Architecture':
-      case 'Computer Organization':
         return {
           icon: Cpu,
           colorClass: 'text-amber-500 bg-amber-500/10 dark:bg-amber-500/20 border-amber-500/20',
@@ -113,9 +109,6 @@ export default function PYQPage() {
           label: 'Graph coloring, logic, combinatorics'
         }
       case 'Engineering Mathematics':
-      case 'Linear Algebra':
-      case 'Calculus':
-      case 'Probability':
         return {
           icon: Hash,
           colorClass: 'text-fuchsia-500 bg-fuchsia-500/10 dark:bg-fuchsia-500/20 border-fuchsia-500/20',
@@ -826,7 +819,7 @@ export default function PYQPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {Object.keys(subjectsMap).map(sub => {
+            {Object.keys(subjectsMap).sort(compareSubjects).map(sub => {
               const config = getSubjectConfig(sub)
               const SubjectIcon = config.icon
               const isSelected = selectedSubjects.includes(sub)
@@ -941,7 +934,7 @@ export default function PYQPage() {
                 className="w-full h-10 pl-9 pr-8 text-xs font-semibold bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-btn focus:outline-none focus:border-primary text-slate-800 dark:text-slate-100 appearance-none cursor-pointer shadow-sm"
               >
                 <option value="All">All Subjects ({Object.keys(subjectsMap).length})</option>
-                {Object.keys(subjectsMap).map(sub => (
+                {Object.keys(subjectsMap).sort(compareSubjects).map(sub => (
                   <option key={sub} value={sub}>{sub}</option>
                 ))}
               </select>
@@ -1071,7 +1064,7 @@ export default function PYQPage() {
               </div>
               
               <div className="space-y-3 pt-2">
-                {Object.keys(topicsMap).map(sub => {
+                {Object.keys(topicsMap).sort(compareSubjects).map(sub => {
                   const isExpanded = expandedWizardSubject === sub
                   const config = getSubjectConfig(sub)
                   const SubjectIcon = config.icon
