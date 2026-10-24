@@ -12,6 +12,7 @@ import ScratchpadDrawer from '../components/ScratchpadDrawer'
 import FilterDropdown from '../components/FilterDropdown'
 import { exportQuestionNotePdf, exportBulkNotesPdf, renderSheetToDataUrl } from '../utils/notesPdfExport'
 import { compareSubjects } from '../utils/subjects'
+import { getTags, hasTopicName } from '../utils/topics'
 
 export default function NotesPage() {
   const { 
@@ -70,7 +71,7 @@ export default function NotesPage() {
     const relevant = selectedSubject === 'ALL'
       ? questionsWithNotes
       : questionsWithNotes.filter(q => q.subject === selectedSubject)
-    const topics = new Set(relevant.map(q => q.topic).filter(Boolean))
+    const topics = new Set(relevant.flatMap(q => getTags(q).map(t => t.topic)))
     return Array.from(topics).sort()
   }, [questionsWithNotes, selectedSubject])
 
@@ -81,12 +82,12 @@ export default function NotesPage() {
 
       if (selectedSubject !== 'ALL' && q.subject !== selectedSubject) return false
       if (selectedYear !== 'ALL' && String(q.year) !== String(selectedYear)) return false
-      if (selectedTopic !== 'ALL' && q.topic !== selectedTopic) return false
+      if (selectedTopic !== 'ALL' && !hasTopicName(q, selectedTopic)) return false
 
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase()
         const matchSubject = q.subject?.toLowerCase().includes(query)
-        const matchTopic = q.topic?.toLowerCase().includes(query)
+        const matchTopic = [q.topic, ...getTags(q).map(t => t.topic)].some(t => t?.toLowerCase().includes(query))
         const matchYear = q.year?.toString().includes(query)
         const matchQuestion = q.question?.toLowerCase().includes(query)
         const matchNoteName = note.name?.toLowerCase().includes(query)
@@ -386,7 +387,7 @@ export default function NotesPage() {
                         label: top,
                         count: questionsWithNotes.filter(q => {
                           if (selectedSubject !== 'ALL' && q.subject !== selectedSubject) return false
-                          return q.topic === top
+                          return hasTopicName(q, top)
                         }).length
                       }))
                     ]}

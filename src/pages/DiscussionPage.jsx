@@ -13,6 +13,7 @@ import RichTextEditor from '../components/RichTextEditor'
 import FormattedContent from '../components/FormattedContent'
 import FilterDropdown from '../components/FilterDropdown'
 import { compareSubjects } from '../utils/subjects'
+import { getTags, hasTopicName } from '../utils/topics'
 
 // Recursive component for rendering multi-level threaded replies
 function ThreadedReplyNode({
@@ -259,7 +260,7 @@ export default function DiscussionPage() {
     const relevant = selectedSubject === 'ALL'
       ? (questions || [])
       : (questions || []).filter(q => q.subject === selectedSubject)
-    const topics = new Set(relevant.map(q => q.topic).filter(Boolean))
+    const topics = new Set(relevant.flatMap(q => getTags(q).map(t => t.topic)))
     return Array.from(topics).sort()
   }, [questions, selectedSubject])
   
@@ -404,7 +405,7 @@ export default function DiscussionPage() {
           if (String(q.year) !== String(selectedYear)) return false
         }
       }
-      if (selectedTopic !== 'ALL' && q.topic !== selectedTopic) return false
+      if (selectedTopic !== 'ALL' && !hasTopicName(q, selectedTopic)) return false
 
       // 2. Search Query
       if (searchQuery.trim()) {
@@ -415,7 +416,7 @@ export default function DiscussionPage() {
         const setShort = q.set ? `s${q.set}` : ''
         const questionText = (q.question || '').toLowerCase()
         const subjectText = (q.subject || '').toLowerCase()
-        const topicText = (q.topic || '').toLowerCase()
+        const topicText = [q.topic, ...getTags(q).map(t => t.topic)].filter(Boolean).join(' ').toLowerCase()
         const idStr = (q.id || '').toString()
 
         // Direct year match (e.g. typing "2024", "2025", "gate 2024", "pyq 2024", "2025 set 2", "2024 s1")
@@ -587,7 +588,7 @@ export default function DiscussionPage() {
                     label: top,
                     count: questions.filter(q => {
                       if (selectedSubject !== 'ALL' && q.subject !== selectedSubject) return false
-                      return q.topic === top
+                      return hasTopicName(q, top)
                     }).length
                   }))
                 ]}

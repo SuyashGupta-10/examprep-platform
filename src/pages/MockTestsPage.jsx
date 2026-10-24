@@ -6,6 +6,7 @@ import { useAppStore, syncTestRecordsToServer } from '../store/useAppStore'
 import confetti from 'canvas-confetti'
 import QuestionImage from '../components/QuestionImage'
 import QuestionText from '../components/QuestionText'
+import { getTags } from '../utils/topics'
 
 export default function MockTestsPage() {
   const [view, setView] = useState('list') // 'list' | 'testing' | 'report'
@@ -415,7 +416,8 @@ export default function MockTestsPage() {
       const qMarks = q.marks || 1
       const qType = q.type || 'MCQ'
       const qSubject = q.subject || 'General Aptitude'
-      const qTopic = q.topic || 'General'
+      // Primary (first) tag, so each question counts toward one topic
+      const qTopic = getTags(q)[0]?.topic || 'General'
       const qDifficulty = q.difficulty || 'Medium'
       const qTimeSpent = timeSpent[q.id] || 0
 
