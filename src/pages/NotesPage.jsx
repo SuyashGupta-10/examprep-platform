@@ -8,6 +8,7 @@ import {
 import { useAppStore } from '../store/useAppStore'
 import QuestionImage from '../components/QuestionImage'
 import QuestionText from '../components/QuestionText'
+import AnswerProvenance from '../components/AnswerProvenance'
 import ScratchpadDrawer from '../components/ScratchpadDrawer'
 import FilterDropdown from '../components/FilterDropdown'
 import { exportQuestionNotePdf, exportBulkNotesPdf, renderSheetToDataUrl } from '../utils/notesPdfExport'
@@ -731,9 +732,10 @@ export default function NotesPage() {
                   {activeQuestion.explanation && (
                     <div className="p-4 rounded-card bg-indigo-50/30 dark:bg-indigo-950/20 border border-primary/20 space-y-1.5">
                       <span className="text-xs font-bold text-primary block">Official Solution & Explanation:</span>
-                      <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-                        {activeQuestion.explanation}
-                      </p>
+                      <div className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+                        <QuestionText text={activeQuestion.explanation} />
+                        <AnswerProvenance question={activeQuestion} />
+                      </div>
                     </div>
                   )}
                 </div>
@@ -886,8 +888,6 @@ export default function NotesPage() {
           currentQuestion={activeQuestion}
           selectedAnswers={{}}
           setSelectedAnswers={() => {}}
-          isMSQCorrect={() => false}
-          isNATCorrect={() => false}
         />
       )}
     </div>

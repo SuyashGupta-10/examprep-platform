@@ -8,6 +8,7 @@ import { useAppStore } from '../store/useAppStore'
 import { useAuthStore } from '../store/useAuthStore'
 import QuestionImage from '../components/QuestionImage'
 import QuestionText from '../components/QuestionText'
+import AnswerProvenance from '../components/AnswerProvenance'
 import ScratchpadDrawer from '../components/ScratchpadDrawer'
 import RichTextEditor from '../components/RichTextEditor'
 import FormattedContent from '../components/FormattedContent'
@@ -937,7 +938,8 @@ export default function DiscussionPage() {
                   <span>Solutions Explanation</span>
                 </div>
                 <div className="text-xs leading-relaxed text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800/40 pt-2 whitespace-pre-wrap">
-                  {selectedQuestion.explanation}
+                  <QuestionText text={selectedQuestion.explanation} />
+                  <AnswerProvenance question={selectedQuestion} />
                 </div>
               </div>
 
@@ -1027,8 +1029,6 @@ export default function DiscussionPage() {
               <ScratchpadDrawer
                 currentQuestion={selectedQuestion}
                 selectedAnswers={{ [selectedQuestion.id]: selectedQuestion.answer }}
-                isMSQCorrect={() => true}
-                isNATCorrect={() => true}
               />
             )}
           </div>

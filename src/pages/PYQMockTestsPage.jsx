@@ -10,8 +10,10 @@ import { useAppStore, syncTestRecordsToServer } from '../store/useAppStore'
 import confetti from 'canvas-confetti'
 import QuestionImage from '../components/QuestionImage'
 import QuestionText from '../components/QuestionText'
+import AnswerProvenance from '../components/AnswerProvenance'
 import { compareSubjects } from '../utils/subjects'
 import { buildTopicsMap, getTags, hasTag, topicKey } from '../utils/topics'
+import { formatAnswer, isAnswerCorrect } from '../utils/answers'
 
 export default function PYQMockTestsPage() {
   const { questions, calculatorOpen, setCalculatorOpen, setIsPracticeActive } = useAppStore()
@@ -582,17 +584,6 @@ export default function PYQMockTestsPage() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }
 
-  // --- CORRECTNESS HELPERS FOR REPORT ---
-  const isMSQCorrect = (selected, correctList) => {
-    if (!selected || selected.length !== correctList.length) return false
-    return selected.every(val => correctList.includes(val))
-  }
-
-  const isNATCorrect = (userAns, correctAns) => {
-    if (userAns === undefined || userAns === '') return false
-    return parseFloat(userAns) === parseFloat(correctAns)
-  }
-
   // --- EXAM SUBMISSION & STORAGE ---
   const handleSubmitTest = () => {
     if (timerRef.current) clearInterval(timerRef.current)
@@ -663,11 +654,11 @@ export default function PYQMockTestsPage() {
         isUnanswered = true
       } else {
         if (qType === 'MCQ') {
-          isCorrect = userAns === q.answer
+          isCorrect = isAnswerCorrect(q, userAns)
         } else if (qType === 'MSQ') {
-          isCorrect = isMSQCorrect(userAns, q.answer)
+          isCorrect = isAnswerCorrect(q, userAns)
         } else if (qType === 'NAT') {
-          isCorrect = isNATCorrect(userAns, q.answer)
+          isCorrect = isAnswerCorrect(q, userAns)
         }
       }
 
@@ -2119,9 +2110,7 @@ export default function PYQMockTestsPage() {
       
       let isCorrect = false
       if (userAns !== undefined && userAns !== '' && (q.type !== 'MSQ' || userAns.length > 0)) {
-        if (q.type === 'MCQ' && userAns === q.answer) isCorrect = true
-        else if (q.type === 'MSQ' && isMSQCorrect(userAns, q.answer)) isCorrect = true
-        else if (q.type === 'NAT' && isNATCorrect(userAns, q.answer)) isCorrect = true
+        if (isAnswerCorrect(q, userAns)) isCorrect = true
 
         if (isCorrect) {
           if (qTimeSpent < 60) pacers.quickCorrect++
@@ -2488,9 +2477,7 @@ export default function PYQMockTestsPage() {
                     questionsOfType.forEach(q => {
                       const ans = answers[q.id]
                       if (ans !== undefined && ans !== '') {
-                        if (q.type === 'MCQ' && ans === q.answer) correctCount++
-                        else if (q.type === 'MSQ' && isMSQCorrect(ans, q.answer)) correctCount++
-                        else if (q.type === 'NAT' && isNATCorrect(ans, q.answer)) correctCount++
+                        if (isAnswerCorrect(q, ans)) correctCount++
                       }
                     })
 
@@ -2760,9 +2747,7 @@ export default function PYQMockTestsPage() {
                   if (selected === undefined || selected === '' || (q.type === 'MSQ' && selected.length === 0)) {
                     isUnanswered = true
                   } else {
-                    if (q.type === 'MCQ') isCorrect = selected === q.answer
-                    else if (q.type === 'MSQ') isCorrect = isMSQCorrect(selected, q.answer)
-                    else if (q.type === 'NAT') isCorrect = isNATCorrect(selected, q.answer)
+                    isCorrect = isAnswerCorrect(q, selected)
                   }
 
                   return { q, idx, selected, isCorrect, isUnanswered }
@@ -2829,11 +2814,7 @@ export default function PYQMockTestsPage() {
                         <div className="p-3 rounded bg-emerald-500/5 border border-emerald-500/15 text-success">
                           <span className="text-slate-455 block font-bold uppercase mb-0.5 text-[9px] tracking-wider">Correct Answer Key:</span>
                           <span>
-                            {q.type === 'MCQ' 
-                              ? `Option ${String.fromCharCode(65 + q.answer)}: ${q.options[q.answer]}`
-                              : q.type === 'MSQ' 
-                              ? q.answer.map(idx => String.fromCharCode(65 + idx)).join(', ')
-                              : `Value: ${q.answer}`}
+                            {formatAnswer(q)}
                           </span>
                         </div>
                       </div>
@@ -2841,6 +2822,7 @@ export default function PYQMockTestsPage() {
                       <div className="p-4 rounded bg-indigo-500/5 border border-indigo-500/10 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                         <span className="block font-bold text-primary mb-1 uppercase tracking-wider text-[9px]">Detailed Explanation</span>
                         <QuestionText text={q.explanation} />
+                        <AnswerProvenance question={q} />
                         <QuestionImage 
                           src={q.explanationImageUrl || q.solutionImageUrl} 
                           alt="Explanation Diagram" 

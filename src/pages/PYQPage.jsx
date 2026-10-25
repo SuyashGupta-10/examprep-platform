@@ -12,8 +12,10 @@ import DiscussionDrawer from '../components/DiscussionDrawer'
 import ScratchpadDrawer from '../components/ScratchpadDrawer'
 import QuestionImage from '../components/QuestionImage'
 import QuestionText from '../components/QuestionText'
+import AnswerProvenance from '../components/AnswerProvenance'
 import { compareSubjects } from '../utils/subjects'
 import { buildTopicsMap, getTags, hasTag, topicKey } from '../utils/topics'
+import { formatAnswer, isAcceptedOption, isAnswerCorrect } from '../utils/answers'
 
 export default function PYQPage() {
   const {
@@ -600,17 +602,6 @@ export default function PYQPage() {
       opacity: 0,
       transition: { duration: 0.25 }
     })
-  }
-
-  // Helper check correctness
-  const isMSQCorrect = (selected, correctList) => {
-    if (!selected || selected.length !== correctList.length) return false
-    return selected.every(val => correctList.includes(val))
-  }
-
-  const isNATCorrect = (userAns, correctAns) => {
-    if (userAns === undefined) return false
-    return parseFloat(userAns) === parseFloat(correctAns)
   }
 
   return (
@@ -1484,7 +1475,7 @@ export default function PYQPage() {
                         {currentQuestion.options.map((option, idx) => {
                           const ansState = selectedAnswers[currentQuestion.id]
                           const isSelected = ansState === idx
-                          const isCorrect = currentQuestion.answer === idx
+                          const isCorrect = isAcceptedOption(currentQuestion, idx)
                           const hasAnswered = ansState !== undefined
 
                           let btnStyle = 'border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-800 dark:text-slate-200'
@@ -1536,7 +1527,7 @@ export default function PYQPage() {
                           {currentQuestion.options.map((option, idx) => {
                             const ansState = selectedAnswers[currentQuestion.id] || { selected: [], submitted: false }
                             const isSelected = ansState.selected.includes(idx)
-                            const isCorrect = currentQuestion.answer.includes(idx)
+                            const isCorrect = isAcceptedOption(currentQuestion, idx)
                             const hasSubmitted = ansState.submitted
 
                             let btnStyle = 'border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-800 dark:text-slate-200'
@@ -1617,7 +1608,7 @@ export default function PYQPage() {
                           <div className="space-y-3 font-medium">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                               <div className={`p-3 rounded border ${
-                                isNATCorrect(selectedAnswers[currentQuestion.id], currentQuestion.answer)
+                                isAnswerCorrect(currentQuestion, selectedAnswers[currentQuestion.id])
                                   ? 'border-success bg-emerald-500/10 text-success'
                                   : 'border-error bg-red-500/10 text-error'
                               }`}>
@@ -1626,7 +1617,7 @@ export default function PYQPage() {
                               </div>
                               <div className="p-3 rounded border border-success bg-emerald-500/5 text-success">
                                 <span className="text-[10px] block font-bold text-slate-400 uppercase mb-1">Correct Key:</span>
-                                <span>{currentQuestion.answer}</span>
+                                <span>{formatAnswer(currentQuestion)}</span>
                               </div>
                             </div>
                           </div>
@@ -1647,14 +1638,15 @@ export default function PYQPage() {
                           <AlertCircle size={14} />
                           <span>
                             {currentQuestion.type === 'MSQ' 
-                              ? isMSQCorrect(selectedAnswers[currentQuestion.id]?.selected, currentQuestion.answer) ? 'Correct Answer!' : 'Incorrect Answer!'
+                              ? isAnswerCorrect(currentQuestion, selectedAnswers[currentQuestion.id]?.selected) ? 'Correct Answer!' : 'Incorrect Answer!'
                               : currentQuestion.type === 'NAT'
-                              ? isNATCorrect(selectedAnswers[currentQuestion.id], currentQuestion.answer) ? 'Correct Answer!' : 'Incorrect Answer!'
-                              : selectedAnswers[currentQuestion.id] === currentQuestion.answer ? 'Correct Answer!' : 'Incorrect Answer!'}
+                              ? isAnswerCorrect(currentQuestion, selectedAnswers[currentQuestion.id]) ? 'Correct Answer!' : 'Incorrect Answer!'
+                              : isAnswerCorrect(currentQuestion, selectedAnswers[currentQuestion.id]) ? 'Correct Answer!' : 'Incorrect Answer!'}
                           </span>
                         </div>
                         <div className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                           <QuestionText text={currentQuestion.explanation} />
+                          <AnswerProvenance question={currentQuestion} />
                         </div>
                         {/* Explanation Diagram / Image (if present) */}
                         <QuestionImage 
@@ -1825,9 +1817,9 @@ export default function PYQPage() {
                     const isNATAnswered = q.type === 'NAT'
                     
                     if (isMCQAnswered || isNATAnswered || isMSQSubmitted) {
-                      const isMCQCorrect = q.type === 'MCQ' && ansState === q.answer
-                      const isMSQCorrectVal = q.type === 'MSQ' && isMSQCorrect(ansState?.selected, q.answer)
-                      const isNATCorrectVal = q.type === 'NAT' && isNATCorrect(ansState, q.answer)
+                      const isMCQCorrect = q.type === 'MCQ' && isAnswerCorrect(q, ansState)
+                      const isMSQCorrectVal = q.type === 'MSQ' && isAnswerCorrect(q, ansState?.selected)
+                      const isNATCorrectVal = q.type === 'NAT' && isAnswerCorrect(q, ansState)
                       
                       const correct = q.type === 'MSQ' ? isMSQCorrectVal : q.type === 'NAT' ? isNATCorrectVal : isMCQCorrect
                       
@@ -1885,9 +1877,9 @@ export default function PYQPage() {
                         const isNATAnswered = q.type === 'NAT'
                         
                         if (isMCQAnswered || isNATAnswered || isMSQSubmitted) {
-                          const isMCQCorrect = q.type === 'MCQ' && ansState === q.answer
-                          const isMSQCorrectVal = q.type === 'MSQ' && isMSQCorrect(ansState?.selected, q.answer)
-                          const isNATCorrectVal = q.type === 'NAT' && isNATCorrect(ansState, q.answer)
+                          const isMCQCorrect = q.type === 'MCQ' && isAnswerCorrect(q, ansState)
+                          const isMSQCorrectVal = q.type === 'MSQ' && isAnswerCorrect(q, ansState?.selected)
+                          const isNATCorrectVal = q.type === 'NAT' && isAnswerCorrect(q, ansState)
                           
                           const correct = q.type === 'MSQ' ? isMSQCorrectVal : q.type === 'NAT' ? isNATCorrectVal : isMCQCorrect
                           
@@ -1960,8 +1952,6 @@ export default function PYQPage() {
                 currentQuestion={currentQuestion}
                 selectedAnswers={selectedAnswers}
                 setSelectedAnswers={setSelectedAnswers}
-                isMSQCorrect={isMSQCorrect}
-                isNATCorrect={isNATCorrect}
                 handleSelectMCQ={handleSelectMCQ}
                 handleToggleMSQ={handleToggleMSQ}
                 handleSubmitMSQ={handleSubmitMSQ}
@@ -1971,8 +1961,6 @@ export default function PYQPage() {
                 currentQuestion={currentQuestion}
                 selectedAnswers={selectedAnswers}
                 setSelectedAnswers={setSelectedAnswers}
-                isMSQCorrect={isMSQCorrect}
-                isNATCorrect={isNATCorrect}
                 handleSelectMCQ={handleSelectMCQ}
                 handleToggleMSQ={handleToggleMSQ}
                 handleSubmitMSQ={handleSubmitMSQ}
